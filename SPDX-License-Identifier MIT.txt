@@ -1,0 +1,99 @@
+ SPDX-License-Identifier MIT
+pragma solidity ^0.8.0;
+pragma experimental ABIEncoderV2;
+
+contract EduPart {
+
+    struct Group{
+        string groupName;
+        uint8 totalStudents;
+        mapping(uint8 = Student) students;
+    }
+
+    struct Student{
+        string name;
+        uint8 course;
+        uint8 totalGrades;
+        mapping(uint8 = Grade) grades;
+    }
+
+    struct Grade{
+        string subject;
+        uint8 mark;
+    }
+
+    uint public groupCount = 0;
+    string[] public groupNames;
+    mapping(string = Group) public groups;
+    address public admin;
+
+    constructor() public {
+        admin = msg.sender;
+    }
+
+    modifier isAdmin(){
+        require(admin == msg.sender, you are not an admin!);
+        _;
+    }
+
+    function addGroup(string memory _group) public isAdmin {
+         добавить группу
+        require(bytes(groups[_group].groupName).length == 0, Group with same name exists!);
+        groups[_group].groupName = _group;
+        groups[_group].totalStudents = 0;
+        groupNames.push(_group);
+        groupCount++;
+    }
+
+    function addStudent(string memory _group, string memory _name, uint8 _course) public isAdmin {
+        require(bytes(groups[_group].groupName).length != 0, Group with this name does not exists!);
+        Group storage group = groups[_group];
+        uint8 studentId = group.totalStudents;
+        group.totalStudents++;
+        group.students[studentId].name = _name;
+        group.students[studentId].course = _course;
+        group.students[studentId].totalGrades = 0;
+    }
+
+    function addGrade(string memory _group, uint8 _studentId, string memory _subject, uint8 _mark) public isAdmin {
+        require(bytes(groups[_group].students[_studentId].name).length != 0, Student with this name does not exists!);
+        Group storage group = groups[_group];
+        Student storage student = group.students[_studentId];
+        uint8 gradeId = student.totalGrades;
+        student.totalGrades++;
+        student.grades[gradeId].subject = _subject;
+        student.grades[gradeId].mark = _mark; 
+    }
+
+    function setMark(string memory _group, uint8 _studentId, uint8 _subjectId, uint8 _newMark) public isAdmin {
+        Group storage group = groups[_group];
+        Student storage student = group.students[_studentId];
+        require(bytes(student.grades[_subjectId].subject).length != 0, Grade with this name does not exists!);
+        Grade storage grade = student.grades[_subjectId];
+        grade.mark = _newMark;
+    }
+
+    function getGroup(string memory _group) public view returns(string memory, uint8) {
+        require(bytes(groups[_group].groupName).length != 0, Group with this name does not exists!);
+        Group storage group = groups[_group];
+        return (group.groupName, group.totalStudents);
+    }
+
+    function getStudent(string memory _group, uint8 _studentId) public view returns(string memory, uint8, uint8) {
+        require(bytes(groups[_group].students[_studentId].name).length != 0, Student with this name does not exists!);
+        Group storage group = groups[_group];
+        Student storage student = group.students[_studentId];
+        return(student.name, student.course, student.totalGrades);
+    }
+
+    function getGrade(string memory _group, uint8 _studentId, uint8 _subjectId) public view returns(Grade memory) {
+        Group storage group = groups[_group];
+        Student storage student = group.students[_studentId];
+        require(bytes(student.grades[_subjectId].subject).length != 0, Grade with this name does not exists!);
+        return student.grades[_subjectId];
+    }
+
+    function pay() external payable isOwner{ 
+        payable(admin).transfer(address(this).balance);
+    }
+}

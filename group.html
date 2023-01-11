@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="d-flex justify-content-between flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+    <h5 class="my-0 mr-md-auto font-weight-normal">Учебная часть</h5>
+    <div class="d-flex">
+        {% if not is_admin %}
+            <div class="mx-2">
+                <a href="/reg">Войти как админ</a>
+            </div>
+        {% endif %}
+        <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='currentColor'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
+            <ol class="breadcrumb my-0">
+              <li class="breadcrumb-item"><a class="nav-link active" href="/">Главная</a></li>
+              <li class="breadcrumb-item">{{ group_name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="d-flex flex-column justify-content-start align-items-center col border-end">
+            <div class="content">
+                <div class="mt-2 mb-4">
+                    <h5 class="text-center">
+                        {% if students|length > 0 %}
+                            Список студентов<br>
+                        {% elif is_admin %}
+                            В этой группе пока нет студентов(<br>
+                            Добавьте кого-нибудь уже!
+                        {% else %}
+                            В этой группе пока нет студентов(
+                        {% endif %}
+                    </h5>
+                </div>
+                {% if is_admin %}
+                    <div class="d-flex justify-content-center">
+                        <form class="d-flex form-signin flex-column align-items-center" method="post">
+                          <p class="mb-3 fw-bold">Добавить студента в группу</p>
+                          <input type="text" name="name" class="form-control" placeholder="Имя Фамилия" required="">
+                          <input type="text" name="course" class="form-control mt-2" placeholder="Курс" required="">
+                            <button class="btn btn-lg btn-primary btn-block mt-2" type="submit">Добавить студента</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col pe-5">
+            <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{ group_name }}</th>
+                      <th scope="col">Имя</th>
+                      <th scope="col">Курс</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for elem in students %}
+                        <tr>
+                          <th scope="row">{{ loop.index }}</th>
+                          <td><a href="/groups/{{ id }}/student/{{ loop.index - 1 }}"><button class="btn btn-sm btn-info btn-block">{{ elem['name'] }}</button></a></td>
+                          <td>{{ elem['course'] }}</td>
+                        </tr>
+                    {% endfor %}
+                  </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
